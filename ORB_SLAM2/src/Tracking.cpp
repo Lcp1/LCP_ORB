@@ -404,7 +404,6 @@ void Tracking::Track()
                 CheckReplacedInLastFrame();//????????????不太像检测是否被替换
 
                 // 步骤2.1：跟踪上一帧或者参考帧或者重定位
-
                 // 运动模型是空的或刚完成重定位
                 // mCurrentFrame.mnId<mnLastRelocFrameId+2这个判断不应该有
                 // 应该只要mVelocity不为空，就优先选择TrackWithMotionModel
