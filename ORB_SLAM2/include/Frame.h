@@ -156,8 +156,8 @@ public:
     std::vector<float> mvDepth;
 
     // Bag of Words Vector structures.
-    DBoW2::BowVector mBowVec;
-    DBoW2::FeatureVector mFeatVec;
+    DBoW2::BowVector mBowVec;//表示图像的单词向量 
+    DBoW2::FeatureVector mFeatVec;//局部特征的向量
 
     // ORB descriptor, each row associated to a keypoint.
     // 左目摄像头和右目摄像头特征点对应的描述子
