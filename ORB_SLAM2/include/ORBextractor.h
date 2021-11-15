@@ -28,7 +28,7 @@
 
 namespace ORB_SLAM2
 {
-
+// 分配四叉树时用到的结点类型
 class ExtractorNode
 {
 public:
@@ -47,6 +47,15 @@ class ORBextractor
 public:
     
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
+    /**
+     * @brief 功能：提取特征前的准备工作
+     * @param nfeatures,ORB特征点数量 
+     * @param scaleFactor,相邻层的放大倍数
+     * @param nlevels,层数
+     * @param iniThFAST,提取FAST角点时初始阈值
+     * @param minThFAST提取FAST角点时,更小的阈值  
+     * 
+     */
     ORBextractor(int nfeatures, float scaleFactor, int nlevels,
                  int iniThFAST, int minThFAST);
 
@@ -55,6 +64,9 @@ public:
     // Compute the ORB features and descriptors on an image.
     // ORB are dispersed on the image using an octree.
     // Mask is ignored in the current implementation.
+    //计算图像上的ORB特征和描述符。
+    //球体使用八叉树分散在图像上。
+    //在当前实现中忽略掩码。
     void operator()( cv::InputArray image, cv::InputArray mask,
       std::vector<cv::KeyPoint>& keypoints,
       cv::OutputArray descriptors);
@@ -113,11 +125,11 @@ protected:
     
     std::vector<float> mvScaleFactor;//每层的相对于原始图像的缩放比例
     
-    std::vector<float> mvInvScaleFactor; //mvScaleFactor的倒数   
+    std::vector<float> mvInvScaleFactor; //缩放比例mvScaleFactor的倒数   
     
-    std::vector<float> mvLevelSigma2;//mvScaleFactor的平方
+    std::vector<float> mvLevelSigma2;//缩放比例mvScaleFactor的平方
      
-    std::vector<float> mvInvLevelSigma2;//mvScaleFactor的平方的倒数
+    std::vector<float> mvInvLevelSigma2;//缩放比例mvScaleFactor的平方的倒数
 };
 
 } //namespace ORB_SLAM

@@ -951,7 +951,7 @@ void Tracking::CreateInitialMapMonocular()
         }
     }
 
-    // 这部分和SteroInitialization()相似
+    // 这部分和SteroInitialization()相似·
     mpLocalMapper->InsertKeyFrame(pKFini);
     mpLocalMapper->InsertKeyFrame(pKFcur);
 
@@ -1011,7 +1011,7 @@ void Tracking::CheckReplacedInLastFrame()
 bool Tracking::TrackReferenceKeyFrame()
 {
     // Compute Bag of Words vector
-    // 步骤1：将当前帧的描述子转化为BoW向量
+    // 步骤1：将当前帧的描述子mDescriptors转化为BoW向量
     mCurrentFrame.ComputeBoW();
 
     // We perform first an ORB matching with the reference keyframe

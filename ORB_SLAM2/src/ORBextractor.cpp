@@ -78,24 +78,37 @@ const int HALF_PATCH_SIZE = 15;
 const int EDGE_THRESHOLD = 19;
 
 
+// OpenCV中Mat属性step，size，step1，elemSize，elemSize1
+// https://blog.csdn.net/qianqing13579/article/details/45318279 
 static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
 {
+    //X，Y方向上的质心
+    //根据公式初始化图像块的矩，前者是按照图像块的y坐标加权，后者是按照图像块的x坐标加权
     int m_01 = 0, m_10 = 0;
-
+//获得这个特征点所在的图像块的中心点坐标灰度值的指针center
     const uchar* center = &image.at<uchar> (cvRound(pt.y), cvRound(pt.x));
 
     // Treat the center line differently, v=0
+    //这条v=0中心线的计算需要特殊对待
+    //由于是中心行+若干行对，所以PATCH_SIZE应该是个奇数
     for (int u = -HALF_PATCH_SIZE; u <= HALF_PATCH_SIZE; ++u)
         m_10 += u * center[u];
 
     // Go line by line in the circuI853lar patch
-    int step = (int)image.step1();
-    for (int v = 1; v <= HALF_PATCH_SIZE; ++v)
+    // step1(i):每一维元素的通道数
+    // step[i]:每一维元素的大小，单位字节
+    // size[i]:每一维元素的个数
+    // i值代表的含义
+    // 0：面（二维矩阵）
+    // 1：线（行）
+    // 2：点（元素）
+    int step = (int)image.step1();//面
+    for (int v = 1; v <= HALF_PATCH_SIZE; ++v)//遍历圆的边界
     {
         // Proceed over the two lines
         int v_sum = 0;
         int d = u_max[v];
-        for (int u = -d; u <= d; ++u)
+        for (int u = -d; u <= d; ++u)//遍历完圆内的坐标
         {
             int val_plus = center[u + v*step], val_minus = center[u - v*step];
             v_sum += (val_plus - val_minus);
@@ -435,34 +448,34 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
     //根据scaleFactor计算每层的mvScaleFactor，其值单调递增
     for(int i=1; i<nlevels; i++)
     {
-        mvScaleFactor[i]=mvScaleFactor[i-1]*scaleFactor;
-        mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];
+        mvScaleFactor[i]=mvScaleFactor[i-1]*scaleFactor;//通过上一层计算当前层 的倍数
+        mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];//层数倍数的平方
     }
 
-    mvInvScaleFactor.resize(nlevels);//放比例的倒数
-    mvInvLevelSigma2.resize(nlevels);//放比例的平方的倒数
+    mvInvScaleFactor.resize(nlevels);//放比例的倒数分配空间
+    mvInvLevelSigma2.resize(nlevels);//放比例的平方的倒数分配空间
     for(int i=0; i<nlevels; i++)
     {
-        mvInvScaleFactor[i]=1.0f/mvScaleFactor[i];
-        mvInvLevelSigma2[i]=1.0f/mvLevelSigma2[i];
+        mvInvScaleFactor[i]=1.0f/mvScaleFactor[i];//放比例的倒数
+        mvInvLevelSigma2[i]=1.0f/mvLevelSigma2[i];//放比例的平方的倒数
     }
 // 图像金字塔 存放各层的图片
     mvImagePyramid.resize(nlevels);
 //每层的特征数量 
  //对于缩放的每层高斯金字塔图像，计算其对应每层待提取特征的数量放入mnFeaturesPerLevel中，使得每层特征点的数列成等比数列数列递减
-    mnFeaturesPerLevel.resize(nlevels);
+    mnFeaturesPerLevel.resize(nlevels);//分配空间
     float factor = 1.0f / scaleFactor;//每层缩放倒数
     float nDesiredFeaturesPerScale = nfeatures*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
-    // （1-F）/(1-F^n)
+    // （1-F）/(1-F^n)?????????????????????????????
 
     int sumFeatures = 0;
     for( int level = 0; level < nlevels-1; level++ )
     {
-        mnFeaturesPerLevel[level] = cvRound(nDesiredFeaturesPerScale);//四舍五入
-        sumFeatures += mnFeaturesPerLevel[level];
-        nDesiredFeaturesPerScale *= factor;
+        mnFeaturesPerLevel[level] = cvRound(nDesiredFeaturesPerScale);//四舍五入,按照顺序存储到容器
+        sumFeatures += mnFeaturesPerLevel[level];//总特征数
+        nDesiredFeaturesPerScale *= factor;//再特征数根据每层倍数变化
     }
-    mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);
+    mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);//最后一层特征数量
     //准备计算关键点keypoint的brief描述子时所需要的pattern
     //这个pattern一共有512个点对；
     const int npoints = 512;
@@ -481,7 +494,7 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
 
     int v, v0, vmax = cvFloor(HALF_PATCH_SIZE * sqrt(2.f) / 2 + 1);
     // 半径作为正方形对角线，vmin为正方形边长
-    int vmin = cvCeil(HALF_PATCH_SIZE * sqrt(2.f) / 2);
+    int vmin = cvCeil(HALF_PATCH_SIZE * sqrt(2.f) / 2);//四分之一扇形对称轴投影到x，y轴值
     const double hp2 = HALF_PATCH_SIZE*HALF_PATCH_SIZE;
     for (v = 0; v <= vmax; ++v)
         umax[v] = cvRound(sqrt(hp2 - v * v));//通过勾股定理求另外一个直角边的长度
