@@ -39,7 +39,7 @@ public:
     std::vector<cv::KeyPoint> vKeys;
     cv::Point2i UL, UR, BL, BR;
     std::list<ExtractorNode>::iterator lit;
-    bool bNoMore;
+    bool bNoMore;//只有一个特征点时，bNoMore为1
 };
 
 class ORBextractor
