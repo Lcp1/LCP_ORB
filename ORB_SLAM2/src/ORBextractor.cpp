@@ -1220,7 +1220,7 @@ void ORBextractor::ComputePyramid(cv::Mat image)
         // ,而wholeSize指的是扩充后图像大小，截图前的图片尺寸
         Size wholeSize(sz.width + EDGE_THRESHOLD*2, sz.height + EDGE_THRESHOLD*2);
         Mat temp(wholeSize, image.type()), masktemp;
-        mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
+        mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));//重新设置图片大小
 
         // Compute the resized image
              //计算第0层以上resize后的图像

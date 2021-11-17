@@ -204,44 +204,45 @@ bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoin
  */
 int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
 {
-    const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();//读取mvpMapPoints地图点云
 
-    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
+    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));//关键帧数目
 
-    const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;
+    const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;//特征索引容器
 
-    int nmatches=0;
+    int nmatches=0;//匹对的数目
 
-    vector<int> rotHist[HISTO_LENGTH];
+    vector<int> rotHist[HISTO_LENGTH];//分配直方图容量
     for(int i=0;i<HISTO_LENGTH;i++)
-        rotHist[i].reserve(500);
+        rotHist[i].reserve(500);//每个直方条为500
     const float factor = HISTO_LENGTH/360.0f;
 
     // We perform the matching over ORB that belong to the same vocabulary node (at a certain level)
     // 将属于同一节点(特定层)的ORB特征进行匹配
-    DBoW2::FeatureVector::const_iterator KFit = vFeatVecKF.begin();
-    DBoW2::FeatureVector::const_iterator Fit = F.mFeatVec.begin();
-    DBoW2::FeatureVector::const_iterator KFend = vFeatVecKF.end();
-    DBoW2::FeatureVector::const_iterator Fend = F.mFeatVec.end();
+    // 获取当前帧和词袋帧的起始地址和末端地址
+    DBoW2::FeatureVector::const_iterator KFit = vFeatVecKF.begin();//词袋帧起点
+    DBoW2::FeatureVector::const_iterator Fit = F.mFeatVec.begin();//当前帧起点
+    DBoW2::FeatureVector::const_iterator KFend = vFeatVecKF.end();//词袋帧末端
+    DBoW2::FeatureVector::const_iterator Fend = F.mFeatVec.end();//当前帧末端
 
-    while(KFit != KFend && Fit != Fend)
+    while(KFit != KFend && Fit != Fend)//循环获取特征点
     {
         if(KFit->first == Fit->first) //步骤1：分别取出属于同一node的ORB特征点(只有属于同一node，才有可能是匹配点)
         {
-            const vector<unsigned int> vIndicesKF = KFit->second;
-            const vector<unsigned int> vIndicesF = Fit->second;
+            const vector<unsigned int> vIndicesKF = KFit->second;//从词袋第二个地址开始
+            const vector<unsigned int> vIndicesF = Fit->second;//从当前帧第二个地址开始
 
             // 步骤2：遍历KF中属于该node的特征点
             for(size_t iKF=0; iKF<vIndicesKF.size(); iKF++)
             {
-                const unsigned int realIdxKF = vIndicesKF[iKF];
+                const unsigned int realIdxKF = vIndicesKF[iKF];//取描述子每个特征的地址
 
                 MapPoint* pMP = vpMapPointsKF[realIdxKF]; // 取出KF中该特征对应的MapPoint
 
-                if(!pMP)
+                if(!pMP)//除去空点
                     continue;
 
-                if(pMP->isBad())
+                if(pMP->isBad())//除去差的点
                     continue;
 
                 const cv::Mat &dKF= pKF->mDescriptors.row(realIdxKF); // 取出KF中该特征对应的描述子
@@ -258,9 +259,9 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
                     if(vpMapPointMatches[realIdxF])// 表明这个点已经被匹配过了，不再匹配，加快速度
                         continue;
 
-                    const cv::Mat &dF = F.mDescriptors.row(realIdxF); // 取出F中该特征对应的描述子
+                    const cv::Mat &dF = F.mDescriptors.row(realIdxF); // 取出F中该特征对应的描述子，结构不是很理解？？？？？？？？？？？？
 
-                    const int dist =  DescriptorDistance(dKF,dF); // 求描述子的距离
+                    const int dist =  DescriptorDistance(dKF,dF); // 求描述子的距离！！！！！！！！！！！！！！关键函数
 
                     if(dist<bestDist1)// dist < bestDist1 < bestDist2，更新bestDist1 bestDist2
                     {
@@ -282,7 +283,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
                     if(static_cast<float>(bestDist1)<mfNNratio*static_cast<float>(bestDist2))
                     {
                         // 步骤5：更新特征点的MapPoint
-                        vpMapPointMatches[bestIdxF]=pMP;
+                        vpMapPointMatches[bestIdxF]=pMP;//存储良好特征点
 
                         const cv::KeyPoint &kp = pKF->mvKeysUn[realIdxKF];
 
@@ -292,9 +293,9 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
                             // angle：每个特征点在提取描述子时的旋转主方向角度，如果图像旋转了，这个角度将发生改变
                             // 所有的特征点的角度变化应该是一致的，通过直方图统计得到最准确的角度变化值
                             float rot = kp.angle-F.mvKeys[bestIdxF].angle;// 该特征点的角度变化值
-                            if(rot<0.0)
+                            if(rot<0.0)//角度转正值
                                 rot+=360.0f;
-                            int bin = round(rot*factor);// 将rot分配到bin组
+                            int bin = round(rot*factor);// 将rot分配到bin组，factor = HISTO_LENGTH/360.0f=30/360，可以看出最大30个
                             if(bin==HISTO_LENGTH)
                                 bin=0;
                             assert(bin>=0 && bin<HISTO_LENGTH);
@@ -1770,7 +1771,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);//直方图中值最大的三个index，ind1,ind2,ind3
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -1845,9 +1846,9 @@ int ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
     for(int i=0; i<8; i++, pa++, pb++)
     {
         unsigned  int v = *pa ^ *pb;
-        v = v - ((v >> 1) & 0x55555555);
-        v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-        dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+        v = v - ((v >> 1) & 0x55555555);// 0x55555555 = 01010101 01010101 01010101 01010101
+        v = (v & 0x33333333) + ((v >> 2) & 0x33333333);//0x33333333 = 00110011 00110011 00110011 00110011
+        dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;// 0xF0F0F0F = 00001111 00001111 00001111 00001111
     }
 
     return dist;

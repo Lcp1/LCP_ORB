@@ -464,7 +464,8 @@ bool Frame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
 /**
  * @brief Bag of Words Representation
  *
- * 计算词包mBowVec表示图像的单词向量 和mFeatVec，其中mFeatVec记录了属于第i个node（在第4层）的ni个描述子
+ * 计算词包mBowVec表示图像的单词向量 
+ * mFeatVec，其中mFeatVec记录了属于第i个node（在第4层）的ni个描述子
  * @see CreateInitialMapMonocular() TrackReferenceKeyFrame() Relocalization()
  * 正向搜索
  */

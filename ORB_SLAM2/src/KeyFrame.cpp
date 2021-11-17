@@ -421,7 +421,7 @@ void KeyFrame::UpdateConnections()
     // vPairs记录与其它关键帧共视帧数大于th的关键帧
     // pair<int,KeyFrame*>将关键帧的权重写在前面，关键帧写在后面方便后面排序
     vector<pair<int,KeyFrame*> > vPairs;
-    vPairs.reserve(KFcounter.size());
+    vPairs.reserve(KFcounter.size());//分配空间
     for(map<KeyFrame*,int>::iterator mit=KFcounter.begin(), mend=KFcounter.end(); mit!=mend; mit++)
     {
         if(mit->second>nmax)

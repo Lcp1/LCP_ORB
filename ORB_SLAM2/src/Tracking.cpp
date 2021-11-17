@@ -1787,36 +1787,37 @@ bool Tracking::Relocalization()
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
     // 步骤2：找到与当前帧相似的候选关键帧
+    // 找到关键帧一步,注意这里有多帧,意思是包括多个图片
     vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame);
 
     if(vpCandidateKFs.empty())
         return false;
 
-    const int nKFs = vpCandidateKFs.size();
+    const int nKFs = vpCandidateKFs.size();//词典的关键帧
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(0.75,true);
+    ORBmatcher matcher(0.75,true);//创建匹配器
 
-    vector<PnPsolver*> vpPnPsolvers;
-    vpPnPsolvers.resize(nKFs);
+    vector<PnPsolver*> vpPnPsolvers;//创建求解器
+    vpPnPsolvers.resize(nKFs);//分配求解器空间
 
-    vector<vector<MapPoint*> > vvpMapPointMatches;
-    vvpMapPointMatches.resize(nKFs);
+    vector<vector<MapPoint*> > vvpMapPointMatches;//创建二维地图点容器
+    vvpMapPointMatches.resize(nKFs);//分配地图容器空间
 
     vector<bool> vbDiscarded;
-    vbDiscarded.resize(nKFs);
+    vbDiscarded.resize(nKFs);//标记丢弃的关键帧
 
     int nCandidates=0;
-
+// 循环读取词袋得到配准的关键帧
     for(int i=0; i<nKFs; i++)
     {
-        KeyFrame* pKF = vpCandidateKFs[i];
-        if(pKF->isBad())
+        KeyFrame* pKF = vpCandidateKFs[i];//获取第i关键帧
+        if(pKF->isBad())//关键帧效果差,准备丢弃
             vbDiscarded[i] = true;
         else
         {
-            // 步骤3：通过BoW进行匹配
+            // 步骤3：通过BoW进行匹配,通过当前帧与词袋帧进行匹配,返回匹配数量,第三个变量是返回配对的点,空位null
             int nmatches = matcher.SearchByBoW(pKF,mCurrentFrame,vvpMapPointMatches[i]);
             if(nmatches<15)
             {

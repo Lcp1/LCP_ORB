@@ -180,8 +180,8 @@ public:
     const cv::Mat mDescriptors;
 
     //BoW
-    DBoW2::BowVector mBowVec; ///< Vector of words to represent images
-    DBoW2::FeatureVector mFeatVec; ///< Vector of nodes with indexes of local features
+    DBoW2::BowVector mBowVec; ///< Vector of words to represent images图像的文字
+    DBoW2::FeatureVector mFeatVec; ///< Vector of nodes with indexes of local features局部特征索引的节点
 
     // Pose relative to parent (this is computed when bad flag is activated)
     cv::Mat mTcp;
