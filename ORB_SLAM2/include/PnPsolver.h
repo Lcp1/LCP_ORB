@@ -173,7 +173,7 @@ class PnPsolver {
   // RANSAC probability
   double mRansacProb;
 
-  // RANSAC min inliers
+  // RANSAC min inliers内点
   int mRansacMinInliers;
 
   // RANSAC max iterations

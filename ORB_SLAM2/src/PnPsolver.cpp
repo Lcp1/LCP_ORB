@@ -155,22 +155,22 @@ PnPsolver::~PnPsolver()
   delete [] pcs;
 }
 
-// 设置RANSAC迭代的参数
+// 设置RANSAC迭代的参数(0.99,10,300,4,0.5,5.991)
 void PnPsolver::SetRansacParameters(double probability, int minInliers, int maxIterations, int minSet, float epsilon, float th2)
 {
-    mRansacProb = probability;
-    mRansacMinInliers = minInliers;
-    mRansacMaxIts = maxIterations;
-    mRansacEpsilon = epsilon;
-    mRansacMinSet = minSet;
+    mRansacProb = probability;//概率
+    mRansacMinInliers = minInliers;//内点
+    mRansacMaxIts = maxIterations;//最大迭代次数
+    mRansacEpsilon = epsilon;//残差，RANSAC expected inliers/total ratio
+    mRansacMinSet = minSet;//最小集
 
     N = mvP2D.size(); // number of correspondences, 所有二维特征点个数
 
     mvbInliersi.resize(N);// inlier index, mvbInliersi记录每次迭代inlier的点
 
     // Adjust Parameters according to number of correspondences
-    int nMinInliers = N*mRansacEpsilon;// RANSAC的残差
-    if(nMinInliers<mRansacMinInliers)
+    int nMinInliers = N*mRansacEpsilon;// RANSAC的残差0.5
+    if(nMinInliers<mRansacMinInliers)//10
         nMinInliers=mRansacMinInliers;
     if(nMinInliers<minSet)
         nMinInliers=minSet;
@@ -244,7 +244,7 @@ cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInlie
         }
 
         // Compute camera pose
-        compute_pose(mRi, mti);
+        compute_pose(mRi, mti);//计算相机的位置
 
         // Check inliers
         CheckInliers();

@@ -1779,7 +1779,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
             {
                 for(size_t j=0, jend=rotHist[i].size(); j<jend; j++)
                 {
-                    CurrentFrame.mvpMapPoints[rotHist[i][j]]=NULL;
+                    CurrentFrame.mvpMapPoints[rotHist[i][j]]=NULL;//清空不在直方图ind内
                     nmatches--;
                 }
             }

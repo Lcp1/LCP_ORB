@@ -1819,7 +1819,7 @@ bool Tracking::Relocalization()
         {
             // 步骤3：通过BoW进行匹配,通过当前帧与词袋帧进行匹配,返回匹配数量,第三个变量是返回配对的点,空位null
             int nmatches = matcher.SearchByBoW(pKF,mCurrentFrame,vvpMapPointMatches[i]);
-            if(nmatches<15)
+            if(nmatches<15)//如果匹配数目少于15就抛弃该帧图片
             {
                 vbDiscarded[i] = true;
                 continue;
@@ -1828,8 +1828,8 @@ bool Tracking::Relocalization()
             {
                 // 初始化PnPsolver
                 PnPsolver* pSolver = new PnPsolver(mCurrentFrame,vvpMapPointMatches[i]);
-                pSolver->SetRansacParameters(0.99,10,300,4,0.5,5.991);
-                vpPnPsolvers[i] = pSolver;
+                pSolver->SetRansacParameters(0.99,10,300,4,0.5,5.991);//设置pnp参数
+                vpPnPsolvers[i] = pSolver;//指向pnp求解器
                 nCandidates++;
             }
         }
@@ -1837,14 +1837,14 @@ bool Tracking::Relocalization()
 
     // Alternatively perform some iterations of P4P RANSAC
     // Until we found a camera pose supported by enough inliers
-    bool bMatch = false;
+    bool bMatch = false;//初始化匹配标志位
     ORBmatcher matcher2(0.9,true);
 
     while(nCandidates>0 && !bMatch)
     {
         for(int i=0; i<nKFs; i++)
         {
-            if(vbDiscarded[i])
+            if(vbDiscarded[i])//判断是否要被丢弃的
                 continue;
 
             // Perform 5 Ransac Iterations
